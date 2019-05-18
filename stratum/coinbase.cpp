@@ -611,6 +611,29 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		return;
 	}
 
+	else if(strcmp(coind->symbol, "DVT") == 0)
+	{
+		char script_dests[2048] = { 0 };
+		char script_payee[128] = { 0 };
+		char payees[4];
+		int npayees = 1;
+		bool coinbase_payload = json_get_bool(json_result, "coinbase_payload");
+			const char *payee = json_get_string(coinbase_payload, "payee");
+			json_int_t amount = json_get_int(coinbase_payload, "amount");
+			if (payee && amount) {
+				npayees++;
+				available -= amount;
+				bech32_decode(payee, script_payee);
+				job_pack_tx(coind, script_dests, amount, script_payee);
+			}
+		}
+		sprintf(payees, "%02x", npayees);
+		strcat(templ->coinb2, payees);
+		strcat(templ->coinb2, script_dests);
+		job_pack_tx(coind, templ->coinb2, available, NULL);
+		strcat(templ->coinb2, "00000000"); // locktime
+		return;
+	}
 
 	else if(coind->hasmasternodes && coind->oldmasternodes) /* OLD DASH style */
 	{
