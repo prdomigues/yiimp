@@ -618,17 +618,18 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		char payees[4];
 		int npayees = 1;
 		json_value* coinbase_payload = json_get_array(json_result, "coinbase_payload");
-		for(int i = 0; i < coinbase_payload->u.array.length; i++) {
-			// This is in Bech32 format, just for debug
-			const char *payee = json_get_string(json_result, "payee");
-			const char *script = json_get_string(json_result, "script");
-			// just converts from const char* to char* to avoid compile error
-			sprintf(script_payee, "%s", script);
-			json_int_t amount = json_get_int(json_result, "amount");
-			if (amount) {
-				npayees++;
-				available -= amount;
-				job_pack_tx(coind, script_dests, amount, script_payee);
+		if(coinbase_payload) {
+			for(int i = 0; i < coinbase_payload->u.array.length; i++) {
+				const char *payee = json_get_string(json_result, "payee");
+				const char *script = json_get_string(json_result, "script");
+				// just converts from const char* to char* to avoid compile error
+				json_int_t amount = json_get_int(json_result, "amount");
+				if (payee && amount) {
+					npayees++;
+					available -= amount;
+					sprintf(script_payee, "%s", script);
+					job_pack_tx(coind, script_dests, amount, script_payee);
+				}
 			}
 		}
 		sprintf(payees, "%02x", npayees);
