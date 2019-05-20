@@ -27,6 +27,19 @@ static void p2sh_pack_tx(YAAMP_COIND *coind, char *data, json_int_t amount, char
 	strcat(data, coinb2_part);
 }
 
+static void script_pack_tx(YAAMP_COIND *coind, char *data, json_int_t amount, const char *script)
+{
+	char evalue[32];
+	char coinb2_part[256];
+	char coinb2_len[4];
+	encode_tx_value(evalue, amount);
+	sprintf(coinb2_part, "%s", script);
+	sprintf(coinb2_len, "%02x", (unsigned int)(strlen(coinb2_part) >> 1) & 0xFF);
+	strcat(data, evalue);
+	strcat(data, coinb2_len);
+	strcat(data, coinb2_part);
+}
+
 static void job_pack_tx(YAAMP_COIND *coind, char *data, json_int_t amount, char *key)
 {
 	int ol = strlen(data);
@@ -622,13 +635,11 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 			for(int i = 0; i < coinbase_payload->u.array.length; i++) {
 				const char *payee = json_get_string(json_result, "payee");
 				const char *script = json_get_string(json_result, "script");
-				// just converts from const char* to char* to avoid compile error
 				json_int_t amount = json_get_int(json_result, "amount");
 				if (payee && amount) {
 					npayees++;
 					available -= amount;
-					sprintf(script_payee, "%s", script);
-					job_pack_tx(coind, script_dests, amount, script_payee);
+					script_pack_tx(coind, script_dests, amount, script);
 				}
 			}
 		}
@@ -637,6 +648,7 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		strcat(templ->coinb2, script_dests);
 		job_pack_tx(coind, templ->coinb2, available, NULL);
 		strcat(templ->coinb2, "00000000"); // locktime
+		coind->reward = (double)available/100000000*coind->reward_mul;
 		return;
 	}
 
