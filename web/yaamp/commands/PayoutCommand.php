@@ -298,7 +298,10 @@ class PayoutCommand extends CConsoleCommand
 		if (!$coin || !$coin->installed)
 			die("Invalid payout coin id\n");
 
-		$relayfee = 0.0001;
+		if($coin->symbol == 'DVT') 
+			$relayfee = 0.001;
+		else
+			$relayfee = 0.0001;
 
 		$dests = array(); $total = 0.;
 		foreach ($payouts as $payout) {
