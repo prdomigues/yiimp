@@ -104,8 +104,13 @@ function BackendCoinPayments($coin)
 
 	foreach($users as $user)
 	{
-		$total_to_pay += round($user->balance, 8);
-		$addresses[$user->username] = round($user->balance, 8);
+		if($coin->symbol == 'DVT') {
+			$total_to_pay += round($user->balance, 3);
+			$addresses[$user->username] = round($user->balance, 3);
+		} else {
+			$total_to_pay += round($user->balance, 8);
+			$addresses[$user->username] = round($user->balance, 8);
+		}
 		// transaction xxx has too many sigops: 1035 > 1000
 		if ($coin->symbol == 'DCR' && count($addresses) > 990) {
 			debuglog("payment: more than 990 {$coin->symbol} users to pay, limit to top balances...");
