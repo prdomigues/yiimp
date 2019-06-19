@@ -1,4 +1,11 @@
 language: cpp
+addons:
+  apt:
+    packages:
+      - librtmp-dev
+      - libidn11-dev
+      - nettle-dev
+      - libgnutls-dev
 script:
   - (cd blocknotify && make)
   - (cd stratum/iniparser && make)
