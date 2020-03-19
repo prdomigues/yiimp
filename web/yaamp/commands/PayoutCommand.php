@@ -299,7 +299,7 @@ class PayoutCommand extends CConsoleCommand
 			die("Invalid payout coin id\n");
 
 		if($coin->symbol == 'DVT') 
-			$relayfee = 0.001;
+			$relayfee = 2;
 		else
 			$relayfee = 0.0001;
 
